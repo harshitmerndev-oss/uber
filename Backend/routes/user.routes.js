@@ -15,7 +15,10 @@ router.post('/register',[
 
 
 
-
+router.post("/login",[
+    body('email').isEmail().withMessage("invalid Email"),
+    body('password').isLength({min:6}).withMessage("pas")
+], userController.loginuser)
 
 
 
