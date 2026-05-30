@@ -4,6 +4,7 @@ const userController=require("../controllers/user.controller")
 const {body}=require("express-validator");
 // SUGGESTION: Remove unused imports to keep route files clean.
 const userModel = require('../models/user.model');
+const authmiddleware=require("../middlewares/auth.middleware")
 const router=express.Router();
 
 router.post('/register',[
@@ -20,6 +21,7 @@ router.post("/login",[
     body('password').isLength({min:6}).withMessage("pas")
 ], userController.loginuser)
 
-
+router.get("/profile",authmiddleware.authuser ,userController.getuserprofile)
+router.get("/logout",authmiddleware.authuser, userController.logoutuser)
 
 module.exports=router;

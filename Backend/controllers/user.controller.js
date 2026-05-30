@@ -1,6 +1,7 @@
 const userModel =require('../models/user.model')
 const userservice=require("../services/user.service")
 const {validationResult}=require("express-validator")
+const blacklisttokenmodel=require("../models/blacklisttoken.model") 
 
 module.exports.registeruser=async(req, res,next)=>{
     // SUGGESTION: Wrap async controller code in try/catch and call next(error) for failed DB/hash operations.
@@ -45,6 +46,17 @@ module.exports.loginuser=async(req,res,next)=>{
             message:"invalid email or password"
         })
     }
-    const token=user.generateAuthToken();
+    const token=user.generateAuthToken()
+    res.cookie('token',token)
     res.status(200).json({token,user})
+}
+module.exports.getuserprofile=async(req,res,next)=>{
+    res.status(200).json(req.user)
+
+}
+module.exports.logoutuser=async(req,res,next)=>{
+    res.clearCookie('token')
+    const token=req.cookies.token || req.headers.authorization.split(' ')[1];
+    await blacklisttokenmodel.create({token})
+    res.status(200).json({message:"logout successfully"})
 }
