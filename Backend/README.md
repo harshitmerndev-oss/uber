@@ -156,3 +156,104 @@ The request body must be JSON and include the following fields:
 - The returned `token` should be stored client-side and included in future authenticated requests as a Bearer token.
 - Credentials are compared securely using password hashing algorithms.
 - For security, the exact error message "Invalid email or password" is returned for both incorrect email and incorrect password to prevent user enumeration attacks.
+
+---
+
+## `GET /users/profile`
+
+### Description
+Retrieve the authenticated user's profile information.
+
+### Request URL
+`/users/profile`
+
+### Request Method
+`GET`
+
+### Request Headers
+- `Authorization: Bearer <jwt-token>`
+- `Cookie: token=<jwt-token>` (optional if token is stored in a cookie)
+
+### Success Response
+- Status: `200 OK`
+- Body:
+
+```json
+{
+  "_id": "<user-id>",
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john.doe@example.com",
+  "createdAt": "2026-05-29T00:00:00.000Z",
+  "updatedAt": "2026-05-29T00:00:00.000Z"
+}
+```
+
+### Error Responses
+- `401 Unauthorized`
+  - Returned when no token is provided, token is invalid, or token has been blacklisted.
+  - Response body contains an error message.
+
+```json
+{
+  "message": "unotharized"
+}
+```
+
+### Notes
+- This endpoint requires authentication. The token can be sent as a Bearer token in the `Authorization` header or via cookies.
+- The response contains the current user object loaded from the authenticated request.
+
+---
+
+## `POST /users/logout`
+
+### Description
+Log out the current user by invalidating the current JSON Web Token and clearing the token cookie.
+
+### Request URL
+`/users/logout`
+
+### Request Method
+`POST`
+
+### Request Headers
+- `Authorization: Bearer <jwt-token>`
+- `Cookie: token=<jwt-token>`
+
+### Success Response
+- Status: `200 OK`
+- Body:
+
+```json
+{
+  "message": "Logout successfully"
+}
+```
+
+### Error Responses
+- `400 Bad Request`
+  - Returned when no token is provided in the request.
+  - Response body contains an error message.
+
+```json
+{
+  "message": "No token provided"
+}
+```
+
+- `401 Unauthorized`
+  - Returned when the token is invalid or has already been blacklisted.
+  - Response body contains an error message.
+
+```json
+{
+  "message": "unotharized"
+}
+```
+
+### Notes
+- The logout endpoint records the token in the blacklist collection to prevent reuse until it expires.
+- The token cookie is cleared from the client on successful logout.

@@ -13,6 +13,12 @@ module.exports.registeruser=async(req, res,next)=>{
         
     }
     const {fullname,email,password}=req.body;
+    const isuserexist=await userModel.findOne({email})
+    if(isuserexist){
+        return res.status(400).json({
+            message:"user already exist"
+        })
+    }
     const hashedpassword=await userModel.hashPassword(password)
     const user=await userservice.createuser({
         firstname:fullname.firstname,
@@ -54,9 +60,23 @@ module.exports.getuserprofile=async(req,res,next)=>{
     res.status(200).json(req.user)
 
 }
-module.exports.logoutuser=async(req,res,next)=>{
-    res.clearCookie('token')
-    const token=req.cookies.token || req.headers.authorization.split(' ')[1];
-    await blacklisttokenmodel.create({token})
-    res.status(200).json({message:"logout successfully"})
-}
+module.exports.logoutuser = async (req, res, next) => {
+    const token =
+        req.cookies.token ||
+        (req.headers.authorization &&
+            req.headers.authorization.split(' ')[1]);
+
+    if (!token) {
+        return res.status(400).json({
+            message: "No token provided"
+        });
+    }
+
+    await blacklisttokenmodel.create({ token });
+
+    res.clearCookie('token');
+
+    res.status(200).json({
+        message: "Logout successfully"
+    });
+};
